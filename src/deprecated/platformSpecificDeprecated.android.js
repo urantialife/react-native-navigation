@@ -215,6 +215,7 @@ function convertStyleParams(originalStyleObject) {
     topTabsScrollable: originalStyleObject.topTabsScrollable,
     topTabsHeight: originalStyleObject.topTabsHeight,
     screenBackgroundColor: processColor(originalStyleObject.screenBackgroundColor),
+    rootBackgroundImageName: originalStyleObject.rootBackgroundImageName,
 
     drawScreenAboveBottomTabs: !originalStyleObject.drawUnderTabBar,
 
@@ -316,7 +317,7 @@ async function startTabBasedApp(params) {
   params.tabs.forEach(function(tab, idx) {
     if (tab.components) {
       const components = tab.components;
-      const screen = createBottomTabScreen(tab, idx, params)
+      let screen = createBottomTabScreen(tab, idx, params)
       const {label, icon} = screen;
       screen.screens = components.map(c => createBottomTabScreen({...c, icon, label}, idx, params));
       screen.screens.map((s, i) => addTitleBarBackButtonIfNeeded(s));
