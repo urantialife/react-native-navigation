@@ -204,7 +204,7 @@ public class NavigationActivity extends AppCompatActivity implements DefaultHard
     @Override
     public void invokeDefaultOnBackPressed() {
         if (layout == null) {
-            if (!NavigationApplication.instance.clearHostOnActivityDestroy()) {
+            if (!NavigationApplication.instance.clearHostOnActivityDestroy(this)) {
                 this.moveTaskToBack(true);
             }
             return;
@@ -212,7 +212,7 @@ public class NavigationActivity extends AppCompatActivity implements DefaultHard
         if (layout.onBackPressed()) {
             return;
         }
-        if (!NavigationApplication.instance.clearHostOnActivityDestroy()) {
+        if (!NavigationApplication.instance.clearHostOnActivityDestroy(this)) {
             this.moveTaskToBack(true);
             return;
         }
