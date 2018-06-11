@@ -1,6 +1,6 @@
 {
   "name": "react-native-navigation",
-  "version": "1.1.471-android-back-and-restart-fixes",
+  "version": "1.1.471-android-back-and-restart-ios-bridge-thread-fixes",
   "description": "React Native Navigation - truly native navigation for iOS and Android",
   "license": "MIT",
   "nativePackage": true,
