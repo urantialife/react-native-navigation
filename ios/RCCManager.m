@@ -58,10 +58,12 @@
 }
 
 -(void)onRNReload {
-    id<UIApplicationDelegate> appDelegate = [UIApplication sharedApplication].delegate;
-    appDelegate.window.rootViewController = nil;
-    [self setAppStyle:nil];
-    [self clearModuleRegistry];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        id<UIApplicationDelegate> appDelegate = [UIApplication sharedApplication].delegate;
+        appDelegate.window.rootViewController = nil;
+        [self setAppStyle:nil];
+        [self clearModuleRegistry];
+    });
 }
 
 -(void)registerController:(UIViewController*)controller componentId:(NSString*)componentId componentType:(NSString*)componentType {
