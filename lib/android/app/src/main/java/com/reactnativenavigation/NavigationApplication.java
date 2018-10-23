@@ -86,4 +86,14 @@ public abstract class NavigationApplication extends Application implements React
     public final Map<String, ExternalComponentCreator> getExternalComponents() {
         return externalComponents;
     }
+
+    /**
+     * Determines whether pressing the back button should background the activity when the
+     * navigation stack is empty; override and return true to cause this behavior, otherwise
+     * by default pressing the back button will close the app when the nav stack is empty
+     * @return false for default behavior, true to background the task
+     */
+    protected boolean backButtonBackgroundsTaskOnEmptyStack() {
+        return false;
+    }
 }
