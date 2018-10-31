@@ -1,9 +1,17 @@
-#import <Foundation/Foundation.h>
 #import "RNNNavigationOptions.h"
 
 @interface RNNBasePresenter : NSObject
 
-- (void)present:(RNNNavigationOptions *)options onViewControllerDidLoad:(UIViewController *)viewController;
-- (void)present:(RNNNavigationOptions *)options onViewControllerWillAppear:(UIViewController *)viewController;
+@property (nonatomic, weak) id bindedViewController;
+
+- (void)bindViewController:(UIViewController *)bindedViewController;
+
+- (void)applyOptionsOnInit:(RNNNavigationOptions *)initialOptions;
+
+- (void)applyOptions:(RNNNavigationOptions *)options;
+
+- (void)applyOptionsOnWillMoveToParentViewController:(RNNNavigationOptions *)options;
+
+- (void)mergeOptions:(RNNNavigationOptions *)newOptions currentOptions:(RNNNavigationOptions *)currentOptions defaultOptions:(RNNNavigationOptions *)defaultOptions;
 
 @end

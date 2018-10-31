@@ -119,8 +119,22 @@ export interface OptionsTopBarTitle {
    * Custom component as the title view
    */
   component?: {
+    /**
+     * Component reference id, Auto generated if empty
+     */
+    id?: string;
+    /**
+     * Name of your component
+     */
     name: string;
+    /**
+     * Set component alignment
+     */
     alignment?: 'center' | 'fill';
+    /**
+     * Properties to pass down to the component
+     */
+    passProps?: object;
   };
   /**
    * Top Bar title height in densitiy pixels
@@ -419,6 +433,10 @@ export interface OptionsBottomTab {
    * Set the text in a badge that is overlayed over the component
    */
   badge?: string;
+  /**
+   * Set the background color of the badge that is overlayed over the component
+   */
+  badgeColor?: string;
   /**
    * Set a testID to reference the tab in E2E tests
    */
@@ -739,4 +757,10 @@ setRoot: {
    * #### (iOS specific)
    */
   rootBackgroundImage?: ImageRequireSource;
+  /**
+   * Enable or disable automatically blurring focused input, dismissing keyboard on unmount
+   * #### (Android specific)
+   * @default false
+   */
+  blurOnUnmount?: boolean;
 }

@@ -130,7 +130,7 @@ public class NavigationActivity extends AppCompatActivity implements DefaultHard
         navigator.destroyViews();
     }
 
-    private void addDefaultSplashLayout() {
+    protected void addDefaultSplashLayout() {
         View view = new View(this);
         view.setBackgroundColor(Color.WHITE);
         setContentView(view);

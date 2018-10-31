@@ -3,36 +3,60 @@
 @interface RNNSideMenuChildVC ()
 
 @property (readwrite) RNNSideMenuChildType type;
-@property (nonatomic, retain) UIViewController<RNNParentProtocol> *child;
+@property (nonatomic, retain) UIViewController<RNNLayoutProtocol> *child;
 
 @end
 
 @implementation RNNSideMenuChildVC
 
-- (instancetype)initWithLayoutInfo:(RNNLayoutInfo *)layoutInfo childViewControllers:(NSArray *)childViewControllers options:(RNNNavigationOptions *)options optionsResolver:(RNNParentOptionsResolver *)optionsResolver presenter:(RNNBasePresenter *)presenter type:(RNNSideMenuChildType)type {
-	self = [self initWithLayoutInfo:layoutInfo childViewControllers:childViewControllers options:options optionsResolver:optionsResolver presenter:presenter];
+- (instancetype)initWithLayoutInfo:(RNNLayoutInfo *)layoutInfo childViewControllers:(NSArray *)childViewControllers options:(RNNNavigationOptions *)options defaultOptions:(RNNNavigationOptions *)defaultOptions presenter:(RNNViewControllerPresenter *)presenter type:(RNNSideMenuChildType)type {
+	self = [self initWithLayoutInfo:layoutInfo childViewControllers:childViewControllers options:options defaultOptions:defaultOptions presenter:presenter];
 	
 	self.type = type;
 
 	return self;
 }
 
-- (instancetype)initWithLayoutInfo:(RNNLayoutInfo *)layoutInfo childViewControllers:(NSArray *)childViewControllers options:(RNNNavigationOptions *)options optionsResolver:(RNNParentOptionsResolver *)optionsResolver presenter:(RNNBasePresenter *)presenter {
+- (instancetype)initWithLayoutInfo:(RNNLayoutInfo *)layoutInfo childViewControllers:(NSArray *)childViewControllers options:(RNNNavigationOptions *)options defaultOptions:(RNNNavigationOptions *)defaultOptions presenter:(RNNViewControllerPresenter *)presenter {
 	self = [super init];
 	
+	self.child = childViewControllers[0];
+	
 	self.presenter = presenter;
+	[self.presenter bindViewController:self];
+	
+	self.defaultOptions = defaultOptions;
 	self.options = options;
 	self.layoutInfo = layoutInfo;
-	self.optionsResolver = optionsResolver;
 	
-	[self bindChildViewControllers:childViewControllers];
-	
+	[self bindChildViewController:self.child];
+
 	return self;
 }
 
-- (void)bindChildViewControllers:(NSArray<UIViewController<RNNParentProtocol> *> *)viewControllers {
-	UIViewController<RNNParentProtocol>* child = viewControllers[0];
-	
+- (void)onChildWillAppear {
+	[_presenter applyOptions:self.resolveOptions];
+	[((UIViewController<RNNParentProtocol> *)self.parentViewController) onChildWillAppear];
+}
+
+- (RNNNavigationOptions *)resolveOptions {
+	return [(RNNNavigationOptions *)[self.getCurrentChild.resolveOptions.copy mergeOptions:self.options] withDefault:self.defaultOptions];
+}
+
+- (void)mergeOptions:(RNNNavigationOptions *)options {
+	[_presenter mergeOptions:options currentOptions:self.options defaultOptions:self.defaultOptions];
+	[((UIViewController<RNNLayoutProtocol> *)self.parentViewController) mergeOptions:options];
+}
+
+- (void)overrideOptions:(RNNNavigationOptions *)options {
+	[self.options overrideOptions:options];
+}
+
+- (UITabBarItem *)tabBarItem {
+	return self.child.tabBarItem;
+}
+
+- (void)bindChildViewController:(UIViewController<RNNLayoutProtocol>*)child {
 	self.child = child;
 	[self addChildViewController:self.child];
 	[self.child.view setFrame:self.view.bounds];
@@ -40,18 +64,12 @@
 	[self.view bringSubviewToFront:self.child.view];
 }
 
-- (UIViewController *)getLeafViewController {
-	return [self.child getLeafViewController];
+- (UIViewController *)getCurrentChild {
+	return self.child;
 }
 
-- (void)willMoveToParentViewController:(UIViewController *)parent {
-	[_optionsResolver resolve:self with:self.childViewControllers];
-	[_presenter present:self.options onViewControllerDidLoad:self];
-}
-
-- (void)mergeOptions:(RNNNavigationOptions *)options {
-	[self.options mergeOptions:options overrideOptions:YES];
-	[self.presenter present:self.options onViewControllerWillAppear:self];
+- (UIViewController<RNNLeafProtocol> *)getCurrentLeaf {
+	return [[self getCurrentChild] getCurrentLeaf];
 }
 
 - (UIStatusBarStyle)preferredStatusBarStyle {
