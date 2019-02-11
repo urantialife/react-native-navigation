@@ -1,4 +1,5 @@
 /// <reference types="react" />
+import { EmitterSubscription } from 'react-native';
 import { NativeEventsReceiver } from '../adapters/NativeEventsReceiver';
 import { CommandsObserver } from './CommandsObserver';
 import { EventSubscription } from '../interfaces/EventSubscription';
@@ -10,16 +11,16 @@ export declare class EventsRegistry {
     private commandsObserver;
     private componentEventsObserver;
     constructor(nativeEventsReceiver: NativeEventsReceiver, commandsObserver: CommandsObserver, componentEventsObserver: ComponentEventsObserver);
-    registerAppLaunchedListener(callback: () => void): EventSubscription;
-    registerComponentDidAppearListener(callback: (event: ComponentDidAppearEvent) => void): EventSubscription;
-    registerComponentDidDisappearListener(callback: (event: ComponentDidDisappearEvent) => void): EventSubscription;
-    registerCommandCompletedListener(callback: (event: CommandCompletedEvent) => void): EventSubscription;
-    registerBottomTabSelectedListener(callback: (event: BottomTabSelectedEvent) => void): EventSubscription;
-    registerNavigationButtonPressedListener(callback: (event: NavigationButtonPressedEvent) => void): EventSubscription;
-    registerModalDismissedListener(callback: (event: ModalDismissedEvent) => void): EventSubscription;
-    registerSearchBarUpdatedListener(callback: (event: SearchBarUpdatedEvent) => void): EventSubscription;
-    registerSearchBarCancelPressedListener(callback: (event: SearchBarCancelPressedEvent) => void): EventSubscription;
-    registerPreviewCompletedListener(callback: (event: PreviewCompletedEvent) => void): EventSubscription;
+    registerAppLaunchedListener(callback: () => void): EmitterSubscription;
+    registerComponentDidAppearListener(callback: (event: ComponentDidAppearEvent) => void): EmitterSubscription;
+    registerComponentDidDisappearListener(callback: (event: ComponentDidDisappearEvent) => void): EmitterSubscription;
+    registerCommandCompletedListener(callback: (event: CommandCompletedEvent) => void): EmitterSubscription;
+    registerBottomTabSelectedListener(callback: (event: BottomTabSelectedEvent) => void): EmitterSubscription;
+    registerNavigationButtonPressedListener(callback: (event: NavigationButtonPressedEvent) => void): EmitterSubscription;
+    registerModalDismissedListener(callback: (event: ModalDismissedEvent) => void): EmitterSubscription;
+    registerSearchBarUpdatedListener(callback: (event: SearchBarUpdatedEvent) => void): EmitterSubscription;
+    registerSearchBarCancelPressedListener(callback: (event: SearchBarCancelPressedEvent) => void): EmitterSubscription;
+    registerPreviewCompletedListener(callback: (event: PreviewCompletedEvent) => void): EmitterSubscription;
     registerCommandListener(callback: (name: string, params: any) => void): EventSubscription;
-    bindComponent(component: React.Component<any>): EventSubscription;
+    bindComponent(component: React.Component<any>, componentId?: string): EventSubscription;
 }

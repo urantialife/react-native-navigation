@@ -1,5 +1,8 @@
 import * as React from 'react';
+import { ComponentProvider } from 'react-native';
+import { Store } from './Store';
+import { ComponentEventsObserver } from '../events/ComponentEventsObserver';
 export declare class ComponentWrapper {
-    static wrap(componentName: string, OriginalComponentClass: React.ComponentType<any>, store: any, componentEventsObserver: any, ReduxProvider?: any, reduxStore?: any): React.ComponentType<any>;
-    static wrapWithRedux(WrappedComponent: any, ReduxProvider: any, reduxStore: any): React.ComponentType<any>;
+    wrap(componentName: string | number, OriginalComponentGenerator: ComponentProvider, store: Store, componentEventsObserver: ComponentEventsObserver, concreteComponentProvider?: ComponentProvider, ReduxProvider?: any, reduxStore?: any): React.ComponentClass<any>;
+    wrapWithRedux(WrappedComponent: React.ComponentClass<any>, ReduxProvider: any, reduxStore: any): React.ComponentClass<any>;
 }

@@ -4,11 +4,11 @@ import { ComponentDidAppearEvent, ComponentDidDisappearEvent, NavigationButtonPr
 import { NativeEventsReceiver } from '../adapters/NativeEventsReceiver';
 export declare class ComponentEventsObserver {
     private readonly nativeEventsReceiver;
-    private readonly listeners;
+    private listeners;
     private alreadyRegistered;
     constructor(nativeEventsReceiver: NativeEventsReceiver);
     registerOnceForAllComponentEvents(): void;
-    bindComponent(component: React.Component<any>): EventSubscription;
+    bindComponent(component: React.Component<any>, componentId?: string): EventSubscription;
     unmounted(componentId: string): void;
     notifyComponentDidAppear(event: ComponentDidAppearEvent): void;
     notifyComponentDidDisappear(event: ComponentDidDisappearEvent): void;

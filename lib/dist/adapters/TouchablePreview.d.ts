@@ -10,11 +10,13 @@ export interface Props {
     children: React.ReactNode;
     touchableComponent?: TouchableHighlight | TouchableOpacity | TouchableNativeFeedback | TouchableWithoutFeedback | React.ReactNode;
     onPress?: () => void;
-    onPressIn?: (reactTag?: any) => void;
+    onPressIn?: (payload: {
+        reactTag: number | null;
+    }) => void;
     onPeekIn?: () => void;
     onPeekOut?: () => void;
 }
-export declare class TouchablePreview extends React.PureComponent<Props, any> {
+export declare class TouchablePreview extends React.PureComponent<Props> {
     static propTypes: {
         children: PropTypes.Requireable<PropTypes.ReactNodeLike>;
         touchableComponent: PropTypes.Requireable<(...args: any[]) => any>;
@@ -24,13 +26,12 @@ export declare class TouchablePreview extends React.PureComponent<Props, any> {
         onPeekOut: PropTypes.Requireable<(...args: any[]) => any>;
     };
     static defaultProps: {
-        touchableComponent: import("react-native").TouchableWithoutFeedbackStatic;
+        touchableComponent: typeof TouchableWithoutFeedback;
     };
     static peeking: boolean;
-    private ref;
     private timeout;
-    private ts;
-    onRef: (ref: React.Component<any, {}, any>) => void;
+    private touchStartedAt;
+    private onRef;
     onPress: () => void;
     onPressIn: () => void | null;
     onTouchStart: (event: GestureResponderEvent) => void;

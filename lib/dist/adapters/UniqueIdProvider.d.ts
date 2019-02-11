@@ -1,3 +1,3 @@
 export declare class UniqueIdProvider {
-    generate(prefix: string): string;
+    generate(prefix?: string): string;
 }

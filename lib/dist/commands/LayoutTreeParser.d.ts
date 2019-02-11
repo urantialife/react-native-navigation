@@ -1,13 +1,16 @@
 import { LayoutNode } from './LayoutTreeCrawler';
+import { Layout } from '../interfaces/Layout';
+import { UniqueIdProvider } from '../adapters/UniqueIdProvider';
 export declare class LayoutTreeParser {
-    constructor();
-    parse(api: any): LayoutNode;
-    _topTabs(api: any): LayoutNode;
-    _sideMenu(api: any): LayoutNode;
-    _sideMenuChildren(api: any): LayoutNode[];
-    _bottomTabs(api: any): LayoutNode;
-    _stack(api: any): LayoutNode;
-    _component(api: any): LayoutNode;
-    _externalComponent(api: any): LayoutNode;
-    _splitView(api: any): LayoutNode;
+    private uniqueIdProvider;
+    constructor(uniqueIdProvider: UniqueIdProvider);
+    parse(api: Layout): LayoutNode;
+    private topTabs;
+    private sideMenu;
+    private sideMenuChildren;
+    private bottomTabs;
+    private stack;
+    private component;
+    private externalComponent;
+    private splitView;
 }

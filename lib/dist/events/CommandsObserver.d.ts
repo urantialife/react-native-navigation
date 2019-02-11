@@ -1,7 +1,10 @@
 import { EventSubscription } from '../interfaces/EventSubscription';
-export declare type CommandsListener = (name: string, params: {}) => void;
+import { UniqueIdProvider } from '../adapters/UniqueIdProvider';
+export declare type CommandsListener = (name: string, params: Record<string, any>) => void;
 export declare class CommandsObserver {
-    private readonly listeners;
+    private uniqueIdProvider;
+    private listeners;
+    constructor(uniqueIdProvider: UniqueIdProvider);
     register(listener: CommandsListener): EventSubscription;
-    notify(commandName: string, params: {}): void;
+    notify(commandName: string, params: Record<string, any>): void;
 }

@@ -1,25 +1,26 @@
 import { LayoutType } from './LayoutType';
+import { OptionsProcessor } from './OptionsProcessor';
+import { Store } from '../components/Store';
 export interface Data {
     name?: string;
     options?: any;
     passProps?: any;
 }
 export interface LayoutNode {
-    id?: string;
+    id: string;
     type: LayoutType;
     data: Data;
     children: LayoutNode[];
 }
 export declare class LayoutTreeCrawler {
-    private readonly uniqueIdProvider;
-    readonly store: any;
-    private optionsProcessor;
-    constructor(uniqueIdProvider: any, store: any);
+    readonly store: Store;
+    private readonly optionsProcessor;
+    constructor(store: Store, optionsProcessor: OptionsProcessor);
     crawl(node: LayoutNode): void;
-    processOptions(options: any): void;
-    _handleComponent(node: any): void;
-    _savePropsToStore(node: any): void;
-    _applyStaticOptions(node: any): void;
-    _assertKnownLayoutType(type: any): void;
-    _assertComponentDataName(component: any): void;
+    private handleComponent;
+    private savePropsToStore;
+    private isComponentWithOptions;
+    private applyStaticOptions;
+    private staticOptionsIfPossible;
+    private assertComponentDataName;
 }

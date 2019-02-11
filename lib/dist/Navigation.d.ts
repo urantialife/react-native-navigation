@@ -1,16 +1,13 @@
-import { Store } from './components/Store';
 import { EventsRegistry } from './events/EventsRegistry';
 import { ComponentProvider } from 'react-native';
-import { ComponentType } from 'react';
+import { SharedElement } from './adapters/SharedElement';
+import { TouchablePreview } from './adapters/TouchablePreview';
 import { LayoutRoot, Layout } from './interfaces/Layout';
 import { Options } from './interfaces/Options';
-export declare class Navigation {
-    readonly Element: React.ComponentType<{
-        elementId: any;
-        resizeMode?: any;
-    }>;
-    readonly TouchablePreview: React.ComponentType<any>;
-    readonly store: Store;
+export declare class NavigationRoot {
+    readonly Element: typeof SharedElement;
+    readonly TouchablePreview: typeof TouchablePreview;
+    private readonly store;
     private readonly nativeEventsReceiver;
     private readonly uniqueIdProvider;
     private readonly componentRegistry;
@@ -21,17 +18,18 @@ export declare class Navigation {
     private readonly eventsRegistry;
     private readonly commandsObserver;
     private readonly componentEventsObserver;
+    private readonly componentWrapper;
     constructor();
     /**
      * Every navigation component in your app must be registered with a unique name.
      * The component itself is a traditional React component extending React.Component.
      */
-    registerComponent(componentName: string, getComponentClassFunc: ComponentProvider): ComponentType<any>;
+    registerComponent(componentName: string | number, componentProvider: ComponentProvider, concreteComponentProvider?: ComponentProvider): ComponentProvider;
     /**
      * Utility helper function like registerComponent,
      * wraps the provided component with a react-redux Provider with the passed redux store
      */
-    registerComponentWithRedux(componentName: string, getComponentClassFunc: ComponentProvider, ReduxProvider: any, reduxStore: any): ComponentType<any>;
+    registerComponentWithRedux(componentName: string | number, getComponentClassFunc: ComponentProvider, ReduxProvider: any, reduxStore: any): ComponentProvider;
     /**
      * Reset the app to a new layout
      */
@@ -47,39 +45,39 @@ export declare class Navigation {
     /**
      * Show a screen as a modal.
      */
-    showModal(layout: Layout): Promise<any>;
+    showModal<P>(layout: Layout<P>): Promise<any>;
     /**
      * Dismiss a modal by componentId. The dismissed modal can be anywhere in the stack.
      */
-    dismissModal(componentId: string, mergeOptions?: any): Promise<any>;
+    dismissModal(componentId: string, mergeOptions?: Options): Promise<any>;
     /**
      * Dismiss all Modals
      */
-    dismissAllModals(mergeOptions?: any): Promise<any>;
+    dismissAllModals(mergeOptions?: Options): Promise<any>;
     /**
      * Push a new layout into this screen's navigation stack.
      */
-    push(componentId: string, layout: Layout): Promise<any>;
+    push<P>(componentId: string, layout: Layout<P>): Promise<any>;
     /**
      * Pop a component from the stack, regardless of it's position.
      */
-    pop(componentId: string, mergeOptions?: any): Promise<any>;
+    pop(componentId: string, mergeOptions?: Options): Promise<any>;
     /**
      * Pop the stack to a given component
      */
-    popTo(componentId: string, mergeOptions?: any): Promise<any>;
+    popTo(componentId: string, mergeOptions?: Options): Promise<any>;
     /**
      * Pop the component's stack to root.
      */
-    popToRoot(componentId: string, mergeOptions?: any): Promise<any>;
+    popToRoot(componentId: string, mergeOptions?: Options): Promise<any>;
     /**
      * Sets new root component to stack.
      */
-    setStackRoot(componentId: string, layout: Layout): Promise<any>;
+    setStackRoot<P>(componentId: string, layout: Layout<P> | Array<Layout<P>>): Promise<any>;
     /**
      * Show overlay on top of the entire app
      */
-    showOverlay(layout: Layout): Promise<any>;
+    showOverlay<P>(layout: Layout<P>): Promise<any>;
     /**
      * dismiss overlay by componentId
      */

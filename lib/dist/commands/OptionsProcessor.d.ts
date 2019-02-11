@@ -1,8 +1,16 @@
+import { Store } from '../components/Store';
+import { UniqueIdProvider } from '../adapters/UniqueIdProvider';
+import { ColorService } from '../adapters/ColorService';
+import { AssetService } from '../adapters/AssetResolver';
+import { Options } from '../interfaces/Options';
 export declare class OptionsProcessor {
-    store: any;
-    uniqueIdProvider: any;
-    constructor(store: any, uniqueIdProvider: any);
-    processOptions(options: any): void;
+    private store;
+    private uniqueIdProvider;
+    private colorService;
+    private assetService;
+    constructor(store: Store, uniqueIdProvider: UniqueIdProvider, colorService: ColorService, assetService: AssetService);
+    processOptions(options: Options): void;
+    private processObject;
     private processColor;
     private processImage;
     private processButtonsPassProps;
