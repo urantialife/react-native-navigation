@@ -283,7 +283,7 @@ static NSString* const setDefaultOptions	= @"setDefaultOptions";
 
 - (void)showOverlay:(NSDictionary *)layout completion:(RNNTransitionCompletionBlock)completion {
 	[self assertReady];
-	UIViewController<RNNParentProtocol>* overlayVC = [_controllerFactory createLayout:layout saveToStore:_store];
+	UIViewController<RNNParentProtocol>* overlayVC = [_controllerFactory createLayout:layout];
 	[overlayVC renderTreeAndWait:NO perform:^{
 		UIWindow* overlayWindow = [[RNNOverlayWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
 		overlayWindow.rootViewController = overlayVC;
