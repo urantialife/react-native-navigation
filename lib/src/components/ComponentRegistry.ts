@@ -1,17 +1,37 @@
-import { AppRegistry, ComponentProvider } from 'react-native';
-import { ComponentWrapper } from './ComponentWrapper';
-import { ComponentType } from 'react';
+import { ComponentProvider } from 'react-native';
 import { Store } from './Store';
 import { ComponentEventsObserver } from '../events/ComponentEventsObserver';
+import { ComponentWrapper } from './ComponentWrapper';
+import { AppRegistryService } from '../adapters/AppRegistryService';
 
 export class ComponentRegistry {
-  constructor(private readonly store: Store, private readonly componentEventsObserver: ComponentEventsObserver) { }
+  constructor(
+    private store: Store,
+    private componentEventsObserver: ComponentEventsObserver,
+    private componentWrapper: ComponentWrapper,
+    private appRegistryService: AppRegistryService
+  ) {}
 
-  registerComponent(componentName: string, getComponentClassFunc: ComponentProvider, ReduxProvider?: any, reduxStore?: any): ComponentType<any> {
-    const OriginalComponentClass = getComponentClassFunc();
-    const NavigationComponent = ComponentWrapper.wrap(componentName, OriginalComponentClass, this.store, this.componentEventsObserver, ReduxProvider, reduxStore);
-    this.store.setOriginalComponentClassForName(componentName, OriginalComponentClass);
-    AppRegistry.registerComponent(componentName, () => NavigationComponent);
+  registerComponent(
+    componentName: string | number,
+    componentProvider: ComponentProvider,
+    concreteComponentProvider?: ComponentProvider,
+    ReduxProvider?: any,
+    reduxStore?: any
+  ): ComponentProvider {
+    const NavigationComponent = () => {
+      return this.componentWrapper.wrap(
+        componentName.toString(),
+        componentProvider,
+        this.store,
+        this.componentEventsObserver,
+        concreteComponentProvider,
+        ReduxProvider,
+        reduxStore
+      );
+    };
+    this.store.setComponentClassForName(componentName.toString(), NavigationComponent);
+    this.appRegistryService.registerComponent(componentName.toString(), NavigationComponent);
     return NavigationComponent;
   }
 }

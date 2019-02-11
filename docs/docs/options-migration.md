@@ -188,7 +188,7 @@ Navigation.mergeOptions(this.props.componentId, {
 On **iOS**, BottomTab visibility can be changed only when pushing screens. This means that if you'd like to hide BottomTabs when pushing a screen, You'll need to set the property to `false` in the options passed to the `push` command or via the `static options(passProps) {}` api.
 
 ## statusBarHidden
-StatusBar visibility
+StatusBar visibility. For android, also set `drawBehind: true`.
 
 ```js
 statusBar: {
@@ -419,6 +419,7 @@ Translucent TopBar, Setting `drawBehind: true` is required for this property to 
 
 ```js
 topBar: {
+  drawBehind: true,
   background: {
     translucent: true
   }
@@ -435,12 +436,14 @@ topBar: {
 ```
 
 ## navBarBlur
-Blue the area behind the TopBar, Setting `drawBehind: true` is required for this property to work as expected.
+Blur the area behind the TopBar, Setting `drawBehind: true` and  topBar background `transparent: true` is required for this property to work as expected.
 
 ```js
 topBar: {
+  drawBehind: true,
   background: {
-    blur: true
+    blur: true,
+    transparent: true
   }
 }  
 ```
@@ -522,7 +525,9 @@ Title alignment
 
 ```js
 topBar: {
-  alignment: 'center'|'fill'
+  title: {
+    alignment: 'center'|'fill'
+  }
 }
 ```
 

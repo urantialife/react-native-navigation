@@ -25,8 +25,9 @@
 	
 	self.layoutInfo = layoutInfo;
 	
-	self.openDrawerGestureModeMask = MMOpenDrawerGestureModeAll;
 	self.closeDrawerGestureModeMask = MMCloseDrawerGestureModeAll;
+	
+	[self.presenter applyOptionsOnInit:self.resolveOptions];
 	
 	// Fixes #3697
 	[self setExtendedLayoutIncludesOpaqueBars:YES];
@@ -41,17 +42,13 @@
 	}
 }
 
-- (UITabBarItem *)tabBarItem {
-	return self.center.tabBarItem;
-}
-
 - (void)onChildWillAppear {
 	[_presenter applyOptions:self.resolveOptions];
 	[((UIViewController<RNNParentProtocol> *)self.parentViewController) onChildWillAppear];
 }
 
 - (RNNNavigationOptions *)resolveOptions {
-	return [(RNNNavigationOptions *)[self.getCurrentChild.resolveOptions.copy mergeOptions:self.options] withDefault:self.defaultOptions];
+	return [(RNNNavigationOptions *)[self.options mergeInOptions:self.getCurrentChild.resolveOptions.copy] withDefault:self.defaultOptions];
 }
 
 - (void)mergeOptions:(RNNNavigationOptions *)options {
@@ -61,6 +58,26 @@
 
 - (void)overrideOptions:(RNNNavigationOptions *)options {
 	[self.options overrideOptions:options];
+}
+
+- (void)renderTreeAndWait:(BOOL)wait perform:(RNNReactViewReadyCompletionBlock)readyBlock {
+	dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
+		dispatch_group_t group = dispatch_group_create();
+		for (UIViewController<RNNLayoutProtocol>* childViewController in self.childViewControllers) {
+			dispatch_group_enter(group);
+			dispatch_async(dispatch_get_main_queue(), ^{
+				[childViewController renderTreeAndWait:wait perform:^{
+					dispatch_group_leave(group);
+				}];
+			});
+		}
+		
+		dispatch_group_wait(group, DISPATCH_TIME_FOREVER);
+		
+		dispatch_async(dispatch_get_main_queue(), ^{
+			readyBlock();
+		});
+	});
 }
 
 - (void)setAnimationType:(NSString *)animationType {
@@ -79,9 +96,11 @@
 	switch (side) {
 		case MMDrawerSideRight:
 			self.maximumRightDrawerWidth = width;
+			[self.right setWidth:width];
 			break;
 		case MMDrawerSideLeft:
 			self.maximumLeftDrawerWidth = width;
+			[self.left setWidth:width];
 		default:
 			break;
 	}
@@ -113,7 +132,6 @@
 		default:
 			break;
 	}
-	self.openDrawerGestureModeMask = enabled ? MMOpenDrawerGestureModeAll : MMOpenDrawerGestureModeNone;
 }
 
 -(void)setControllers:(NSArray*)controllers {
@@ -131,6 +149,8 @@
 			else if(child.type == RNNSideMenuChildTypeRight) {
 				self.right = child;
 			}
+			
+			[self addChildViewController:child];
 		}
 		
 		else {
@@ -159,10 +179,6 @@
 
 - (UIViewController<RNNLayoutProtocol> *)getCurrentChild {
 	return self.center;
-}
-
-- (UIViewController<RNNLeafProtocol> *)getCurrentLeaf {
-	return [[self getCurrentChild] getCurrentLeaf];
 }
 
 @end

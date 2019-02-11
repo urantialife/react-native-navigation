@@ -40,7 +40,7 @@
 }
 
 - (RNNNavigationOptions *)resolveOptions {
-	return [(RNNNavigationOptions *)[self.getCurrentChild.resolveOptions.copy mergeOptions:self.options] withDefault:self.defaultOptions];
+	return [(RNNNavigationOptions *)[self.options mergeInOptions:self.getCurrentChild.resolveOptions.copy] withDefault:self.defaultOptions];
 }
 
 - (void)mergeOptions:(RNNNavigationOptions *)options {
@@ -52,8 +52,8 @@
 	[self.options overrideOptions:options];
 }
 
-- (UITabBarItem *)tabBarItem {
-	return self.child.tabBarItem;
+- (void)renderTreeAndWait:(BOOL)wait perform:(RNNReactViewReadyCompletionBlock)readyBlock {
+	[self.getCurrentChild renderTreeAndWait:wait perform:readyBlock];
 }
 
 - (void)bindChildViewController:(UIViewController<RNNLayoutProtocol>*)child {
@@ -64,12 +64,14 @@
 	[self.view bringSubviewToFront:self.child.view];
 }
 
-- (UIViewController *)getCurrentChild {
-	return self.child;
+- (void)setWidth:(CGFloat)width {
+	CGRect frame = self.child.view.frame;
+	frame.size.width = width;
+	self.child.view.frame = frame;
 }
 
-- (UIViewController<RNNLeafProtocol> *)getCurrentLeaf {
-	return [[self getCurrentChild] getCurrentLeaf];
+- (UIViewController *)getCurrentChild {
+	return self.child;
 }
 
 - (UIStatusBarStyle)preferredStatusBarStyle {

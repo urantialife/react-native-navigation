@@ -1,10 +1,11 @@
 import * as _ from 'lodash';
+import { ComponentProvider } from 'react-native';
 
 export class Store {
-  private componentsByName = {};
-  private propsById = {};
+  private componentsByName: Record<string, ComponentProvider> = {};
+  private propsById: Record<string, any> = {};
 
-  setPropsForId(componentId: string, props) {
+  setPropsForId(componentId: string, props: any) {
     _.set(this.propsById, componentId, props);
   }
 
@@ -12,15 +13,15 @@ export class Store {
     return _.get(this.propsById, componentId, {});
   }
 
-  setOriginalComponentClassForName(componentName: string, ComponentClass) {
-    _.set(this.componentsByName, componentName, ComponentClass);
+  cleanId(componentId: string) {
+    _.unset(this.propsById, componentId);
   }
 
-  getOriginalComponentClassForName(componentName: string) {
-    return _.get(this.componentsByName, componentName);
+  setComponentClassForName(componentName: string | number, ComponentClass: ComponentProvider) {
+    _.set(this.componentsByName, componentName.toString(), ComponentClass);
   }
 
-  cleanId(id: string) {
-    _.unset(this.propsById, id);
+  getComponentClassForName(componentName: string | number): ComponentProvider | undefined {
+    return _.get(this.componentsByName, componentName.toString());
   }
 }

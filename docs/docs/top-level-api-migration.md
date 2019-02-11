@@ -2,6 +2,23 @@
 
 In order to make our API homogenous as much as possible, we provide setRoot function that will receive layout of any kind.
 
+## registerComponent
+Registering screens without redux or any wrapping providers is the same as in v1.
+```js
+Navigation.registerComponent('example.FirstTabScreen', () => FirstTabScreen);
+```
+
+### Registering screens with wrapping provider component
+```js
+Navigation.registerComponent('navigation.playground.ReduxScreen', () => (props) => (
+  <Provider store={reduxStore}>
+    <ReduxScreen {...props} />
+  </Provider>
+), () => ReduxScreen);
+```
+!>Note that `Navigation.registerComponentWithRedux` is deprecated
+
+
 ## startTabBasedApp(params) -> setRoot({bottomTabs})
 
 ```js
@@ -20,7 +37,7 @@ Navigation.setRoot({
           }],
           options: {
             bottomTab: {
-              title: 'Tab 1',
+              text: 'Tab 1',
               icon: require('../images/one.png'),
               testID: 'FIRST_TAB_BAR_BUTTON'
             }
@@ -35,7 +52,7 @@ Navigation.setRoot({
           },
           options: {
             bottomTab: {
-              title: 'Tab 2',
+              text: 'Tab 2',
               icon: require('../images/two.png'),
               testID: 'SECOND_TAB_BAR_BUTTON'
             }
