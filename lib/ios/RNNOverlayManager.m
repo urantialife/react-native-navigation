@@ -13,6 +13,7 @@
 #pragma mark - public
 
 - (void)showOverlayWindow:(RNNOverlayWindow *)overlayWindow withOptions:(NSDictionary *)options {
+    overlayWindow.previousWindow = [UIApplication sharedApplication].keyWindow;
     [_overlayWindows addObject:overlayWindow];
     overlayWindow.rootViewController.view.backgroundColor = [UIColor clearColor];
     [overlayWindow setWindowLevel:UIWindowLevelNormal];
@@ -26,8 +27,8 @@
 
 - (void)dismissOverlay:(UIViewController*)viewController {
     RNNOverlayWindow* overlayWindow = [self findWindowByRootViewController:viewController];
-    [self detachOverlayWindow:overlayWindow];
-    [self assignKeyWindow];
+	[self assignKeyWindow:overlayWindow.previousWindow];
+	[self detachOverlayWindow:overlayWindow];
 }
 
 #pragma mark - private
@@ -39,10 +40,12 @@
     [_keyOverlayWindows removeObject:overlayWindow];
 }
 
-- (void)assignKeyWindow {
-    UIWindow *nextKeyWindow = [_keyOverlayWindows firstObject];
+- (void)assignKeyWindow:(UIWindow *)nextKeyWindow {
     if (!nextKeyWindow) {
-        nextKeyWindow =[[[UIApplication sharedApplication] delegate] window];
+        nextKeyWindow = [_keyOverlayWindows firstObject];
+    }
+    if (!nextKeyWindow) {
+        nextKeyWindow = [[[UIApplication sharedApplication] delegate] window];
     }
     [nextKeyWindow makeKeyWindow];
 }
@@ -53,7 +56,7 @@
             return window;
         }
     }
-    
+
     return nil;
 }
 
