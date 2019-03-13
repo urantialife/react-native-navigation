@@ -53,7 +53,7 @@
             return window;
         }
     }
-    
+
     return nil;
 }
 
