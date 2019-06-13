@@ -36,6 +36,7 @@ import com.reactnativenavigation.views.StackLayout;
 import com.reactnativenavigation.views.titlebar.TitleBar;
 import com.reactnativenavigation.views.toptabs.TopTabs;
 
+import java.util.Collections;
 import java.util.List;
 
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
@@ -75,7 +76,6 @@ public class TopBar extends AppBarLayout implements ScrollEventListener.ScrollAw
         root.addView(content);
         root.addView(border);
         addView(root, MATCH_PARENT, WRAP_CONTENT);
-        if (BuildConfig.DEBUG) setContentDescription("TopBar");
     }
 
     private LinearLayout createContentLayout() {
@@ -119,6 +119,10 @@ public class TopBar extends AppBarLayout implements ScrollEventListener.ScrollAw
 
     public void setTitleHeight(int height) {
         titleBar.setHeight(height);
+    }
+
+    public void setTitleTopMargin(int topMargin) {
+        titleBar.setTopMargin(topMargin);
     }
 
     public void setTitle(String title) {
@@ -174,6 +178,7 @@ public class TopBar extends AppBarLayout implements ScrollEventListener.ScrollAw
     }
 
     public void setBackgroundComponent(View component) {
+        if (this.component == component || component.getParent() != null) return;
         this.component = component;
         root.addView(component, 0);
     }
@@ -208,8 +213,16 @@ public class TopBar extends AppBarLayout implements ScrollEventListener.ScrollAw
         titleBar.setLeftButtons(leftButtons);
     }
 
+    public void clearLeftButtons() {
+        titleBar.setLeftButtons(Collections.emptyList());
+    }
+
     public void setRightButtons(List<TitleBarButtonController> rightButtons) {
         titleBar.setRightButtons(rightButtons);
+    }
+
+    public void clearRightButtons() {
+        titleBar.setRightButtons(Collections.emptyList());
     }
 
     public void setElevation(Double elevation) {
@@ -271,12 +284,11 @@ public class TopBar extends AppBarLayout implements ScrollEventListener.ScrollAw
         animator.hide(options, onAnimationEnd);
     }
 
-    public void clear() {
+    public void clearBackgroundComponent() {
         if (component != null) {
             root.removeView(component);
             component = null;
         }
-        titleBar.clear();
     }
 
     public void clearTopTabs() {

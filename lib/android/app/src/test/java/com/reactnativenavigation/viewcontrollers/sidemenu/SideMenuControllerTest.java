@@ -4,7 +4,9 @@ import android.app.Activity;
 import android.content.res.Resources;
 import android.util.TypedValue;
 import android.view.Gravity;
+import android.view.View;
 import android.view.ViewGroup.LayoutParams;
+import android.view.Window;
 
 import com.reactnativenavigation.BaseTest;
 import com.reactnativenavigation.mocks.SimpleComponentViewController;
@@ -16,6 +18,7 @@ import com.reactnativenavigation.parse.params.Text;
 import com.reactnativenavigation.presentation.Presenter;
 import com.reactnativenavigation.presentation.SideMenuPresenter;
 import com.reactnativenavigation.utils.CommandListenerAdapter;
+import com.reactnativenavigation.utils.Functions;
 import com.reactnativenavigation.viewcontrollers.ChildControllersRegistry;
 import com.reactnativenavigation.viewcontrollers.ParentController;
 import com.reactnativenavigation.viewcontrollers.ViewController;
@@ -31,6 +34,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @SuppressWarnings("MagicNumber")
 public class SideMenuControllerTest extends BaseTest {
@@ -47,7 +51,8 @@ public class SideMenuControllerTest extends BaseTest {
 
     @Override
     public void beforeEach() {
-        activity = newActivity();
+        activity = createActivity();
+
         childRegistry = new ChildControllersRegistry();
         presenter = spy(new SideMenuPresenter());
         child = new SimpleComponentViewController(activity, childRegistry, "child", new Options());
@@ -250,6 +255,35 @@ public class SideMenuControllerTest extends BaseTest {
         verify(spy).onViewDisappear();
     }
 
+    @Test
+    public void onDrawerOpened_drawerOpenedWIthSwipe_visibilityIsUpdated() {
+        uut.setLeftController(left);
+        uut.setRightController(right);
+        uut.ensureViewIsCreated();
+
+        openDrawerAndAssertVisibility(right, (side) -> side.resolveCurrentOptions().sideMenuRootOptions.right);
+        closeDrawerAndAssertVisibility(right, (side) -> side.resolveCurrentOptions().sideMenuRootOptions.right);
+
+        openDrawerAndAssertVisibility(left, (side) -> side.resolveCurrentOptions().sideMenuRootOptions.left);
+        closeDrawerAndAssertVisibility(left, (side) -> side.resolveCurrentOptions().sideMenuRootOptions.left);
+    }
+
+    private void openDrawerAndAssertVisibility(ViewController side, Functions.FuncR1<ViewController, SideMenuOptions> opt) {
+        Options options = new Options();
+        (side == left ? options.sideMenuRootOptions.left : options.sideMenuRootOptions.right).visible = new Bool(true);
+        uut.mergeOptions(options);
+        assertThat(uut.getView().isDrawerVisible(side.getView())).isTrue();
+        assertThat(opt.run(side).visible.isFalseOrUndefined()).isTrue();
+    }
+
+    private void closeDrawerAndAssertVisibility(ViewController side, Functions.FuncR1<ViewController, SideMenuOptions> opt) {
+        Options options = new Options();
+        (side == left ? options.sideMenuRootOptions.left : options.sideMenuRootOptions.right).visible = new Bool(false);
+        uut.mergeOptions(options);
+        assertThat(uut.getView().isDrawerVisible(side.getView())).isFalse();
+        assertThat(opt.run(side).visible.isTrue()).isFalse();
+    }
+
     private void openLeftMenu() {
         Options options = new Options();
         options.sideMenuRootOptions.left.visible = new Bool(true);
@@ -276,5 +310,13 @@ public class SideMenuControllerTest extends BaseTest {
         options.sideMenuRootOptions.right.visible = new Bool(false);
         options.sideMenuRootOptions.right.animate = new Bool(false);
         uut.mergeOptions(options);
+    }
+
+    private Activity createActivity() {
+        Activity activity = spy(newActivity());
+        Window window = Mockito.mock(Window.class);
+        when(window.getDecorView()).thenReturn(Mockito.mock(View.class));
+        when(activity.getWindow()).thenReturn(window);
+        return activity;
     }
 }

@@ -45,6 +45,8 @@ import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InOrder;
 import org.mockito.Mockito;
+import org.robolectric.Robolectric;
+import org.robolectric.shadows.ShadowLooper;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -67,6 +69,7 @@ public class StackControllerTest extends BaseTest {
     private ChildControllersRegistry childRegistry;
     private StackController uut;
     private ViewController child1;
+    private ViewController child1a;
     private ViewController child2;
     private ViewController child3;
     private ViewController child4;
@@ -86,6 +89,7 @@ public class StackControllerTest extends BaseTest {
         renderChecker = spy(new RenderChecker());
         presenter = spy(new StackPresenter(activity, new TitleBarReactViewCreatorMock(), new TopBarBackgroundViewCreatorMock(), new TopBarButtonCreatorMock(), ImageLoaderMock.mock(), renderChecker, new Options()));
         child1 = spy(new SimpleViewController(activity, childRegistry, "child1", new Options()));
+        child1a = spy(new SimpleViewController(activity, childRegistry, "child1", new Options()));
         child2 = spy(new SimpleViewController(activity, childRegistry, "child2", new Options()));
         child3 = spy(new SimpleViewController(activity, childRegistry, "child3", new Options()));
         child4 = spy(new SimpleViewController(activity, childRegistry, "child4", new Options()));
@@ -259,6 +263,8 @@ public class StackControllerTest extends BaseTest {
 
     @Test
     public void setRoot_multipleChildren() {
+        Robolectric.getForegroundThreadScheduler().pause();
+
         activity.setContentView(uut.getView());
         disablePushAnimation(child1, child2, child3, child4);
         disablePopAnimation(child4);
@@ -266,6 +272,7 @@ public class StackControllerTest extends BaseTest {
         assertThat(uut.isEmpty()).isTrue();
         uut.push(child1, new CommandListenerAdapter());
         uut.push(child2, new CommandListenerAdapter());
+        ShadowLooper.idleMainLooper();
         assertThat(uut.getTopBar().getTitleBar().getNavigationIcon()).isNotNull();
         uut.setRoot(Arrays.asList(child3, child4), new CommandListenerAdapter() {
             @Override
@@ -277,10 +284,35 @@ public class StackControllerTest extends BaseTest {
 
                 assertThat(uut.getCurrentChild()).isEqualTo(child4);
                 uut.pop(Options.EMPTY, new CommandListenerAdapter());
+                ShadowLooper.idleMainLooper();
                 assertThat(uut.getTopBar().getTitleBar().getNavigationIcon()).isNull();
                 assertThat(uut.getCurrentChild()).isEqualTo(child3);
             }
         });
+    }
+
+    @Test
+    public void setRoot_doesNotCrashWhenCalledInQuickSuccession() {
+        disablePushAnimation(child1);
+        uut.setRoot(Collections.singletonList(child1), new CommandListenerAdapter());
+
+        ViewGroup c2View = child2.getView();
+        ViewGroup c3View = child3.getView();
+        uut.setRoot(Collections.singletonList(child2), new CommandListenerAdapter());
+        uut.setRoot(Collections.singletonList(child3), new CommandListenerAdapter());
+        animator.endPushAnimation(c2View);
+        animator.endPushAnimation(c3View);
+
+        assertContainsOnlyId(child3.getId());
+    }
+
+    @Test
+    public void setRoot_doesNotCrashWhenCalledWithSameId() {
+        disablePushAnimation(child1, child1a);
+        uut.setRoot(Collections.singletonList(child1), new CommandListenerAdapter());
+        uut.setRoot(Collections.singletonList(child1a), new CommandListenerAdapter());
+
+        assertContainsOnlyId(child1a.getId());
     }
 
     @Test
@@ -295,6 +327,18 @@ public class StackControllerTest extends BaseTest {
                 assertContainsOnlyId(child1.getId());
             }
         });
+    }
+
+    @Test
+    public void pop_screenCurrentlyBeingPushedIsPopped() {
+        disablePushAnimation(child1, child2);
+        uut.push(child1, Mockito.mock(CommandListenerAdapter.class));
+        uut.push(child2, Mockito.mock(CommandListenerAdapter.class));
+
+        uut.push(child3, Mockito.mock(CommandListenerAdapter.class));
+        uut.pop(Options.EMPTY, Mockito.mock(CommandListenerAdapter.class));
+        assertThat(uut.size()).isEqualTo(2);
+        assertContainsOnlyId(child1.getId(), child2.getId());
     }
 
     @Test
@@ -623,6 +667,19 @@ public class StackControllerTest extends BaseTest {
     }
 
     @Test
+    public void popTo_pushAnimationIsCancelled() {
+        disablePushAnimation(child1, child2);
+        uut.push(child1, Mockito.mock(CommandListenerAdapter.class));
+        uut.push(child2, Mockito.mock(CommandListenerAdapter.class));
+
+        ViewGroup pushed = child3.getView();
+        uut.push(child3, Mockito.mock(CommandListenerAdapter.class));
+        uut.popTo(child1, Options.EMPTY, Mockito.mock(CommandListenerAdapter.class));
+        animator.endPushAnimation(pushed);
+        assertContainsOnlyId(child1.getId());
+    }
+
+    @Test
     public void popToRoot_PopsEverythingAboveFirstController() {
         child1.options.animations.push.enabled = new Bool(false);
         child2.options.animations.push.enabled = new Bool(false);
@@ -705,6 +762,19 @@ public class StackControllerTest extends BaseTest {
         uut.popToRoot(mergeOptions, new CommandListenerAdapter());
         verify(child2).mergeOptions(mergeOptions);
         verify(child1, times(0)).mergeOptions(mergeOptions);
+    }
+
+    @Test
+    public void popToRoot_screenPushedBeforePopAnimationCompletesIsPopped() {
+        disablePushAnimation(child1, child2);
+        uut.push(child1, Mockito.mock(CommandListenerAdapter.class));
+        uut.push(child2, Mockito.mock(CommandListenerAdapter.class));
+
+        ViewGroup pushed = child3.getView();
+        uut.push(child3, Mockito.mock(CommandListenerAdapter.class));
+        uut.popToRoot(Options.EMPTY, Mockito.mock(CommandListenerAdapter.class));
+        animator.endPushAnimation(pushed);
+        assertContainsOnlyId(child1.getId());
     }
 
     @Test
@@ -988,9 +1058,18 @@ public class StackControllerTest extends BaseTest {
     }
 
     @Test
-    public void destroy() {
-        uut.destroy();
-        verify(topBarController, times(1)).clear();
+    public void onAttachToParent_doesNotCrashWhenCalledAfterDestroy() {
+        Robolectric.getForegroundThreadScheduler().pause();
+        StackController spy = spy(createStack());
+
+        StackLayout view = spy.getView();
+        spy.push(child1, new CommandListenerAdapter());
+        activity.setContentView(view);
+
+        child1.destroy();
+        ShadowLooper.idleMainLooper();
+
+        verify(spy).onAttachToParent();
     }
 
     private void assertContainsOnlyId(String... ids) {
@@ -999,18 +1078,18 @@ public class StackControllerTest extends BaseTest {
     }
 
     private StackController createStack() {
-        return createStack("stack", new ArrayList<>());
+        return createStackBuilder("stack", new ArrayList<>()).build();
     }
 
     private StackController createStack(String id) {
-        return createStack(id, new ArrayList<>());
+        return createStackBuilder(id, new ArrayList<>()).build();
     }
 
     private StackController createStack(List<ViewController> children) {
-        return createStack("stack", children);
+        return createStackBuilder("stack", children).build();
     }
 
-    private StackController createStack(String id, List<ViewController> children) {
+    private StackControllerBuilder createStackBuilder(String id, List<ViewController> children) {
         createTopBarController();
         return TestUtils.newStackController(activity)
                 .setChildren(children)
@@ -1019,8 +1098,7 @@ public class StackControllerTest extends BaseTest {
                 .setChildRegistry(childRegistry)
                 .setAnimator(animator)
                 .setStackPresenter(presenter)
-                .setBackButtonHelper(backButtonHelper)
-                .build();
+                .setBackButtonHelper(backButtonHelper);
     }
 
     private void createTopBarController() {

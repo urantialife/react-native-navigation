@@ -97,6 +97,8 @@ public class BottomTabsController extends ParentController implements AHBottomNa
     public void mergeOptions(Options options) {
         presenter.mergeOptions(options);
         super.mergeOptions(options);
+        this.options.bottomTabsOptions.clearOneTimeOptions();
+        this.initialOptions.bottomTabsOptions.clearOneTimeOptions();
     }
 
     @Override
@@ -135,7 +137,7 @@ public class BottomTabsController extends ParentController implements AHBottomNa
 
     @Override
     protected ViewController getCurrentChild() {
-        return tabs.get(bottomTabs.getCurrentItem());
+        return tabs.get(bottomTabs == null ? 0 : bottomTabs.getCurrentItem());
     }
 
     @Override

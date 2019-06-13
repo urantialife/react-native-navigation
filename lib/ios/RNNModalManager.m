@@ -1,5 +1,7 @@
 #import "RNNModalManager.h"
 #import "RNNRootViewController.h"
+#import "RNNAnimationsTransitionDelegate.h"
+#import "RNNLayoutProtocol.h"
 
 @implementation RNNModalManager {
 	NSMutableArray* _pendingModalIdsToDismiss;
@@ -19,7 +21,7 @@
 	[self showModal:viewController animated:animated hasCustomAnimation:NO completion:completion];
 }
 
--(void)showModal:(UIViewController *)viewController animated:(BOOL)animated hasCustomAnimation:(BOOL)hasCustomAnimation completion:(RNNTransitionWithComponentIdCompletionBlock)completion {
+-(void)showModal:(UIViewController<RNNLayoutProtocol> *)viewController animated:(BOOL)animated hasCustomAnimation:(BOOL)hasCustomAnimation completion:(RNNTransitionWithComponentIdCompletionBlock)completion {
 	if (!viewController) {
 		@throw [NSException exceptionWithName:@"ShowUnknownModal" reason:@"showModal called with nil viewController" userInfo:nil];
 	}
@@ -27,8 +29,9 @@
 	UIViewController* topVC = [self topPresentedVC];
 	topVC.definesPresentationContext = YES;
 	
+	RNNAnimationsTransitionDelegate* tr = [[RNNAnimationsTransitionDelegate alloc] initWithScreenTransition:viewController.resolveOptions.animations.showModal isDismiss:NO];
 	if (hasCustomAnimation) {
-		viewController.transitioningDelegate = (UIViewController<UIViewControllerTransitioningDelegate>*)topVC;
+		viewController.transitioningDelegate = tr;
 	}
 	
 	[topVC presentViewController:viewController animated:animated completion:^{
@@ -59,7 +62,7 @@
 
 
 -(void)removePendingNextModalIfOnTop:(RNNTransitionCompletionBlock)completion {
-	UIViewController<RNNParentProtocol> *modalToDismiss = [_pendingModalIdsToDismiss lastObject];
+	UIViewController<RNNLayoutProtocol> *modalToDismiss = [_pendingModalIdsToDismiss lastObject];
 	RNNNavigationOptions* options = modalToDismiss.resolveOptions;
 
 	if(!modalToDismiss) {
@@ -67,9 +70,9 @@
 	}
 
 	UIViewController* topPresentedVC = [self topPresentedVC];
-
-	if ([options.animations.showModal hasCustomAnimation]) {
-		modalToDismiss.transitioningDelegate = modalToDismiss;
+	RNNAnimationsTransitionDelegate* tr = [[RNNAnimationsTransitionDelegate alloc] initWithScreenTransition:modalToDismiss.resolveOptions.animations.dismissModal isDismiss:YES];
+	if ([options.animations.dismissModal hasCustomAnimation]) {
+		[self topViewControllerParent:modalToDismiss].transitioningDelegate = tr;
 	}
 
 	if (modalToDismiss == topPresentedVC || [[topPresentedVC childViewControllers] containsObject:modalToDismiss]) {
@@ -113,6 +116,15 @@
 -(UIViewController*)topPresentedVCLeaf {
 	id root = [self topPresentedVC];
 	return [root topViewController] ? [root topViewController] : root;
+}
+
+- (UIViewController *)topViewControllerParent:(UIViewController *)viewController {
+	UIViewController* topParent = viewController;
+	while (topParent.parentViewController) {
+		topParent = topParent.parentViewController;
+	}
+	
+	return topParent;
 }
 
 
